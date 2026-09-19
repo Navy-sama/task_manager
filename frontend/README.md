@@ -20,16 +20,16 @@ API runs somewhere else.
 
 ## Scripts
 
-| Command | Purpose |
-|---|---|
-| `pnpm dev` | Vite dev server with the `/api` proxy |
-| `pnpm build` | Type-check (`tsc -b`) then production build |
-| `pnpm preview` | Serve the production build locally (port 4173, same proxy) |
-| `pnpm lint` | ESLint + Prettier check |
-| `pnpm format` | ESLint `--fix` + Prettier write |
-| `pnpm typecheck` | `tsc -b` only |
-| `pnpm test` | Vitest run (jsdom, React Testing Library, MSW) |
-| `pnpm test:watch` | Vitest in watch mode |
+| Command           | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `pnpm dev`        | Vite dev server with the `/api` proxy                      |
+| `pnpm build`      | Type-check (`tsc -b`) then production build                |
+| `pnpm preview`    | Serve the production build locally (port 4173, same proxy) |
+| `pnpm lint`       | ESLint + Prettier check                                    |
+| `pnpm format`     | ESLint `--fix` + Prettier write                            |
+| `pnpm typecheck`  | `tsc -b` only                                              |
+| `pnpm test`       | Vitest run (jsdom, React Testing Library, MSW)             |
+| `pnpm test:watch` | Vitest in watch mode                                       |
 
 Requires Node ≥ 24 (`engines.node` in `package.json`) and pnpm.
 
@@ -92,8 +92,8 @@ Run with `pnpm test` (CI mode) or `pnpm test:watch` while developing.
 
 ## Environment and proxy
 
-| Variable | Default | Purpose |
-|---|---|---|
+| Variable                | Default                 | Purpose                                          |
+| ----------------------- | ----------------------- | ------------------------------------------------ |
 | `VITE_API_PROXY_TARGET` | `http://localhost:8080` | Backend the dev/preview server proxies `/api` to |
 
 The proxy is defined once in `vite.config.ts` and applies to both `pnpm dev` and `pnpm preview`. In
