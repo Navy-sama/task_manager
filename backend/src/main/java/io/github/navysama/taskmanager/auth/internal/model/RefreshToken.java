@@ -71,6 +71,10 @@ public class RefreshToken {
         }
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public Long getUserId() {
         return userId;
     }

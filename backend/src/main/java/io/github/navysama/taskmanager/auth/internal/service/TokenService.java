@@ -64,6 +64,10 @@ public class TokenService {
      * <p>A token that was already used is the signature of theft: either the attacker or the legitimate user is
      * replaying it. Every session of that user is revoked, forcing a new login. The caller's transaction must not
      * roll back on the resulting exception, otherwise the revocation would be lost.
+     *
+     * <p>Marking the token used is a conditional update ({@code usedAt is null}), not a dirty-checked save: two
+     * concurrent requests can both pass the checks above on the same in-memory snapshot, but only one of them can
+     * win the update. The loser is treated exactly like reuse.
      */
     public Long consume(String rawToken) {
         if (rawToken == null || rawToken.isBlank()) {
@@ -80,7 +84,11 @@ public class TokenService {
         if (!token.isUsable(now)) {
             throw AuthExceptions.invalidRefreshToken();
         }
-        token.markUsed(now);
+        if (refreshTokens.markUsedIfUnused(token.getId(), now) == 0) {
+            log.warn("Refresh token reuse detected for user {}: revoking all sessions", token.getUserId());
+            refreshTokens.revokeAllForUser(token.getUserId(), now);
+            throw AuthExceptions.invalidRefreshToken();
+        }
         return token.getUserId();
     }
 

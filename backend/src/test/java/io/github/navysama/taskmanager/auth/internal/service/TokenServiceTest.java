@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,11 +51,12 @@ class TokenServiceTest {
     void consume_shouldMarkTokenUsedAndReturnOwner_whenTokenIsUsable() {
         RefreshToken token = RefreshToken.issue(42L, TokenService.hash(RAW_TOKEN), NOW, NOW.plus(Duration.ofDays(7)));
         when(refreshTokens.findByTokenHash(TokenService.hash(RAW_TOKEN))).thenReturn(Optional.of(token));
+        when(refreshTokens.markUsedIfUnused(any(), eq(NOW))).thenReturn(1);
 
         Long owner = tokenService.consume(RAW_TOKEN);
 
         assertThat(owner).isEqualTo(42L);
-        assertThat(token.getUsedAt()).isEqualTo(NOW);
+        verify(refreshTokens).markUsedIfUnused(token.getId(), NOW);
     }
 
     @Test
@@ -62,6 +64,22 @@ class TokenServiceTest {
         RefreshToken token = RefreshToken.issue(42L, TokenService.hash(RAW_TOKEN), NOW, NOW.plus(Duration.ofDays(7)));
         token.markUsed(NOW.minusSeconds(60));
         when(refreshTokens.findByTokenHash(anyString())).thenReturn(Optional.of(token));
+
+        assertThatThrownBy(() -> tokenService.consume(RAW_TOKEN))
+                .isInstanceOf(ApiException.class)
+                .extracting(e -> ((ApiException) e).getErrorCode())
+                .isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+        verify(refreshTokens).revokeAllForUser(42L, NOW);
+        verify(refreshTokens, never()).markUsedIfUnused(any(), any());
+    }
+
+    @Test
+    void consume_shouldRevokeAllSessionsAndFail_whenConditionalUpdateLosesTheRace() {
+        // Two concurrent refreshes both pass the checks above on the same snapshot; the conditional update lets
+        // only one of them win. The loser must be treated exactly like reuse.
+        RefreshToken token = RefreshToken.issue(42L, TokenService.hash(RAW_TOKEN), NOW, NOW.plus(Duration.ofDays(7)));
+        when(refreshTokens.findByTokenHash(TokenService.hash(RAW_TOKEN))).thenReturn(Optional.of(token));
+        when(refreshTokens.markUsedIfUnused(any(), eq(NOW))).thenReturn(0);
 
         assertThatThrownBy(() -> tokenService.consume(RAW_TOKEN))
                 .isInstanceOf(ApiException.class)
@@ -77,6 +95,7 @@ class TokenServiceTest {
 
         assertThatThrownBy(() -> tokenService.consume(RAW_TOKEN)).isInstanceOf(ApiException.class);
         verify(refreshTokens, never()).revokeAllForUser(any(), any());
+        verify(refreshTokens, never()).markUsedIfUnused(any(), any());
     }
 
     @Test
