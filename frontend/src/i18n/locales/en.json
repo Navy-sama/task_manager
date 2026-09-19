@@ -1,0 +1,147 @@
+{
+  "app": {
+    "name": "Task Manager",
+    "loading": "Loading…",
+    "skipToContent": "Skip to content"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "retry": "Try again",
+    "close": "Close"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "emailPlaceholder": "you@example.com",
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to manage your tasks.",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create one"
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Start organising your work in a few seconds.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "passwordHint": "8 to 72 characters.",
+      "success": "Welcome! Your account is ready."
+    },
+    "logout": "Sign out",
+    "loggedOut": "You have been signed out.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "signedInAs": "Signed in as {{email}}"
+  },
+  "validation": {
+    "emailRequired": "Email is required.",
+    "emailInvalid": "Enter a valid email address.",
+    "emailMax": "Email must be at most 254 characters.",
+    "passwordRequired": "Password is required.",
+    "passwordMin": "Password must be at least 8 characters.",
+    "passwordMax": "Password must be at most 72 characters.",
+    "confirmPasswordRequired": "Please confirm your password.",
+    "passwordMismatch": "Passwords do not match.",
+    "titleRequired": "Title is required.",
+    "titleMax": "Title must be at most 200 characters.",
+    "descriptionMax": "Description must be at most 2000 characters."
+  },
+  "tasks": {
+    "heading": "My tasks",
+    "subheading": "Plan, track and complete your work.",
+    "new": "New task",
+    "status": {
+      "ALL": "All",
+      "TODO": "To do",
+      "IN_PROGRESS": "In progress",
+      "DONE": "Done"
+    },
+    "filters": {
+      "status": "Filter by status",
+      "search": "Search tasks",
+      "searchPlaceholder": "Search by title or description…",
+      "clear": "Clear filters"
+    },
+    "count_one": "{{count}} task",
+    "count_other": "{{count}} tasks",
+    "updatedAt": "Updated {{date}}",
+    "noDescription": "No description",
+    "actions": {
+      "changeStatus": "Change status of “{{title}}”",
+      "edit": "Edit “{{title}}”",
+      "delete": "Delete “{{title}}”"
+    },
+    "loading": "Loading tasks…",
+    "empty": {
+      "title": "No tasks yet",
+      "description": "Create your first task to get started.",
+      "filteredTitle": "No matching tasks",
+      "filteredDescription": "Try another search term or status."
+    },
+    "error": {
+      "title": "Your tasks could not be loaded"
+    },
+    "form": {
+      "createTitle": "New task",
+      "createDescription": "Give your task a clear title. You can add details below.",
+      "editTitle": "Edit task",
+      "editDescription": "Update the task details, then save your changes.",
+      "title": "Title",
+      "titlePlaceholder": "e.g. Write the README",
+      "description": "Description",
+      "optional": "Optional",
+      "status": "Status",
+      "create": "Create task",
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "deleteDialog": {
+      "title": "Delete this task?",
+      "description": "“{{title}}” will be permanently deleted. This cannot be undone.",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    },
+    "toast": {
+      "created": "Task created.",
+      "updated": "Task updated.",
+      "deleted": "Task deleted.",
+      "statusChanged": "Moved to “{{status}}”.",
+      "notFound": "This task no longer exists. The list has been refreshed."
+    }
+  },
+  "pagination": {
+    "label": "Pagination",
+    "pageOf": "Page {{page}} of {{totalPages}}",
+    "previous": "Previous",
+    "next": "Next",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "codes": {
+      "NETWORK_ERROR": "The server could not be reached. Check your connection and try again.",
+      "VALIDATION_FAILED": "Some fields are invalid. Please review them.",
+      "MALFORMED_REQUEST": "The request could not be understood. Please try again.",
+      "INVALID_PARAMETER": "Some filters are invalid. Please reset them.",
+      "UNAUTHENTICATED": "Please sign in to continue.",
+      "INVALID_CREDENTIALS": "Incorrect email or password.",
+      "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
+      "CSRF_TOKEN_INVALID": "Your security token has expired. Please try again.",
+      "FORBIDDEN": "You are not allowed to perform this action.",
+      "TASK_NOT_FOUND": "This task no longer exists.",
+      "NOT_FOUND": "The requested resource was not found.",
+      "METHOD_NOT_ALLOWED": "This action is not supported.",
+      "EMAIL_ALREADY_USED": "An account already exists with this email.",
+      "UNSUPPORTED_MEDIA_TYPE": "The request format is not supported.",
+      "INTERNAL_ERROR": "The server ran into a problem. Please try again later."
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "app": {
+    "name": "Task Manager",
+    "loading": "Chargement…",
+    "skipToContent": "Aller au contenu"
+  },
+  "common": {
+    "cancel": "Annuler",
+    "retry": "Réessayer",
+    "close": "Fermer"
+  },
+  "language": {
+    "label": "Langue"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "emailPlaceholder": "vous@exemple.com",
+    "login": {
+      "title": "Bon retour parmi nous",
+      "subtitle": "Connectez-vous pour gérer vos tâches.",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "noAccount": "Pas encore de compte ?",
+      "registerLink": "Créer un compte"
+    },
+    "register": {
+      "title": "Créer votre compte",
+      "subtitle": "Commencez à organiser votre travail en quelques secondes.",
+      "submit": "Créer le compte",
+      "submitting": "Création du compte…",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Se connecter",
+      "passwordHint": "Entre 8 et 72 caractères.",
+      "success": "Bienvenue ! Votre compte est prêt."
+    },
+    "logout": "Se déconnecter",
+    "loggedOut": "Vous êtes déconnecté.",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "signedInAs": "Connecté en tant que {{email}}"
+  },
+  "validation": {
+    "emailRequired": "L'e-mail est obligatoire.",
+    "emailInvalid": "Saisissez une adresse e-mail valide.",
+    "emailMax": "L'e-mail ne doit pas dépasser 254 caractères.",
+    "passwordRequired": "Le mot de passe est obligatoire.",
+    "passwordMin": "Le mot de passe doit contenir au moins 8 caractères.",
+    "passwordMax": "Le mot de passe ne doit pas dépasser 72 caractères.",
+    "confirmPasswordRequired": "Veuillez confirmer votre mot de passe.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "titleRequired": "Le titre est obligatoire.",
+    "titleMax": "Le titre ne doit pas dépasser 200 caractères.",
+    "descriptionMax": "La description ne doit pas dépasser 2000 caractères."
+  },
+  "tasks": {
+    "heading": "Mes tâches",
+    "subheading": "Planifiez, suivez et terminez votre travail.",
+    "new": "Nouvelle tâche",
+    "status": {
+      "ALL": "Toutes",
+      "TODO": "À faire",
+      "IN_PROGRESS": "En cours",
+      "DONE": "Terminée"
+    },
+    "filters": {
+      "status": "Filtrer par statut",
+      "search": "Rechercher des tâches",
+      "searchPlaceholder": "Rechercher par titre ou description…",
+      "clear": "Effacer les filtres"
+    },
+    "count_one": "{{count}} tâche",
+    "count_many": "{{count}} tâches",
+    "count_other": "{{count}} tâches",
+    "updatedAt": "Modifiée le {{date}}",
+    "noDescription": "Aucune description",
+    "actions": {
+      "changeStatus": "Changer le statut de « {{title}} »",
+      "edit": "Modifier « {{title}} »",
+      "delete": "Supprimer « {{title}} »"
+    },
+    "loading": "Chargement des tâches…",
+    "empty": {
+      "title": "Aucune tâche pour le moment",
+      "description": "Créez votre première tâche pour commencer.",
+      "filteredTitle": "Aucune tâche ne correspond",
+      "filteredDescription": "Essayez une autre recherche ou un autre statut."
+    },
+    "error": {
+      "title": "Impossible de charger vos tâches"
+    },
+    "form": {
+      "createTitle": "Nouvelle tâche",
+      "createDescription": "Donnez un titre clair à votre tâche. Vous pouvez ajouter des détails ci-dessous.",
+      "editTitle": "Modifier la tâche",
+      "editDescription": "Mettez à jour la tâche, puis enregistrez vos modifications.",
+      "title": "Titre",
+      "titlePlaceholder": "ex. Rédiger le README",
+      "description": "Description",
+      "optional": "Facultatif",
+      "status": "Statut",
+      "create": "Créer la tâche",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "deleteDialog": {
+      "title": "Supprimer cette tâche ?",
+      "description": "« {{title}} » sera définitivement supprimée. Cette action est irréversible.",
+      "confirm": "Supprimer",
+      "deleting": "Suppression…"
+    },
+    "toast": {
+      "created": "Tâche créée.",
+      "updated": "Tâche mise à jour.",
+      "deleted": "Tâche supprimée.",
+      "statusChanged": "Déplacée vers « {{status}} ».",
+      "notFound": "Cette tâche n'existe plus. La liste a été actualisée."
+    }
+  },
+  "pagination": {
+    "label": "Pagination",
+    "pageOf": "Page {{page}} sur {{totalPages}}",
+    "previous": "Précédente",
+    "next": "Suivante",
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Veuillez réessayer.",
+    "codes": {
+      "NETWORK_ERROR": "Le serveur est injoignable. Vérifiez votre connexion et réessayez.",
+      "VALIDATION_FAILED": "Certains champs sont invalides. Veuillez les vérifier.",
+      "MALFORMED_REQUEST": "La requête est incompréhensible. Veuillez réessayer.",
+      "INVALID_PARAMETER": "Certains filtres sont invalides. Veuillez les réinitialiser.",
+      "UNAUTHENTICATED": "Veuillez vous connecter pour continuer.",
+      "INVALID_CREDENTIALS": "E-mail ou mot de passe incorrect.",
+      "INVALID_REFRESH_TOKEN": "Votre session a expiré. Veuillez vous reconnecter.",
+      "CSRF_TOKEN_INVALID": "Votre jeton de sécurité a expiré. Veuillez réessayer.",
+      "FORBIDDEN": "Vous n'êtes pas autorisé à effectuer cette action.",
+      "TASK_NOT_FOUND": "Cette tâche n'existe plus.",
+      "NOT_FOUND": "La ressource demandée est introuvable.",
+      "METHOD_NOT_ALLOWED": "Cette action n'est pas prise en charge.",
+      "EMAIL_ALREADY_USED": "Un compte existe déjà avec cet e-mail.",
+      "UNSUPPORTED_MEDIA_TYPE": "Le format de la requête n'est pas pris en charge.",
+      "INTERNAL_ERROR": "Le serveur a rencontré un problème. Veuillez réessayer plus tard."
+    }
+  }
+}
