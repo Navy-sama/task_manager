@@ -13,6 +13,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -89,7 +90,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected @Nullable ResponseEntity<Object> handleExceptionInternal(
             Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
-        ProblemDetail problem = body instanceof ProblemDetail detail ? detail : ProblemDetail.forStatus(statusCode);
+        ProblemDetail problem;
+        if (body instanceof ProblemDetail detail) {
+            problem = detail;
+        } else if (ex instanceof ErrorResponse errorResponse) {
+            // ErrorResponseException (incl. ApiException) is handed over with a null body: its own body is the source.
+            problem = errorResponse.getBody();
+        } else {
+            problem = ProblemDetail.forStatus(statusCode);
+        }
         if (!Problems.hasCode(problem)) {
             problem.setProperty(Problems.CODE_PROPERTY, codeFor(ex, statusCode).name());
         }
