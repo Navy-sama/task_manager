@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/api_exception.dart';
 import 'package:mobile/features/tasks/models/page_response.dart';
@@ -25,6 +27,12 @@ class FakeTasksRepository implements TasksRepository {
   String? lastQuery;
   ApiException? failNextFetchWith;
 
+  /// When true, `fetchTasks` never resolves on its own: each call appends a
+  /// [Completer] to [pendingFetches] that the test completes explicitly, to
+  /// control the order in which concurrent requests resolve.
+  bool manualCompletion = false;
+  final List<Completer<PageResponse<Task>>> pendingFetches = [];
+
   @override
   Future<PageResponse<Task>> fetchTasks({
     TaskStatus? status,
@@ -40,6 +48,11 @@ class FakeTasksRepository implements TasksRepository {
       final error = failNextFetchWith!;
       failNextFetchWith = null;
       throw error;
+    }
+    if (manualCompletion) {
+      final completer = Completer<PageResponse<Task>>();
+      pendingFetches.add(completer);
+      return completer.future;
     }
     var filtered = allTasks.where((t) => status == null || t.status == status);
     if (query != null && query.isNotEmpty) {
@@ -180,4 +193,72 @@ void main() {
     expect(ok, isTrue);
     expect(viewModel.tasks, hasLength(1));
   });
+
+  test('does not notify or throw when disposed while a fetch is pending', () async {
+    repository.manualCompletion = true;
+    final pending = viewModel.loadInitial();
+    expect(repository.pendingFetches, hasLength(1));
+
+    viewModel.dispose();
+
+    repository.pendingFetches.single.complete(
+      const PageResponse<Task>(
+        content: [],
+        page: 0,
+        size: 2,
+        totalElements: 0,
+        totalPages: 1,
+      ),
+    );
+
+    // Would throw (ChangeNotifier disallows notifyListeners after dispose)
+    // if the view model didn't guard against notifying post-dispose.
+    await pending;
+  });
+
+  test(
+    'discards a stale response when a newer request resolves first',
+    () async {
+      repository.manualCompletion = true;
+
+      // Slow request: the initial load.
+      unawaited(viewModel.loadInitial());
+      expect(repository.pendingFetches, hasLength(1));
+
+      // Fast request: a filter change started before the slow one resolves.
+      viewModel.setStatusFilter(TaskStatus.done);
+      expect(repository.pendingFetches, hasLength(2));
+
+      // The fast (latest) request resolves first.
+      repository.pendingFetches[1].complete(
+        PageResponse<Task>(
+          content: [_task(2, status: TaskStatus.done)],
+          page: 0,
+          size: 2,
+          totalElements: 1,
+          totalPages: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.tasks, hasLength(1));
+      expect(viewModel.tasks.single.status, TaskStatus.done);
+      expect(viewModel.isLoading, isFalse);
+
+      // The slow (stale) request resolves last and must be discarded.
+      repository.pendingFetches[0].complete(
+        PageResponse<Task>(
+          content: [_task(1, status: TaskStatus.todo)],
+          page: 0,
+          size: 2,
+          totalElements: 1,
+          totalPages: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(viewModel.tasks, hasLength(1));
+      expect(viewModel.tasks.single.status, TaskStatus.done);
+    },
+  );
 }

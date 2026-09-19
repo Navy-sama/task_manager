@@ -30,6 +30,13 @@ class TasksViewModel extends ChangeNotifier {
   String? _errorMessage;
   List<Task> _tasks = const [];
   Timer? _debounceTimer;
+  bool _disposed = false;
+
+  /// Incremented on every [_fetch] call. A response is only applied if its
+  /// id is still the latest when it completes, so a slower, superseded
+  /// request (e.g. the previous filter) can never overwrite a faster,
+  /// more recent one.
+  int _requestId = 0;
 
   TaskStatus? get statusFilter => _statusFilter;
   String get query => _query;
@@ -80,7 +87,7 @@ class TasksViewModel extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.detail;
-      notifyListeners();
+      _notify();
       return false;
     }
   }
@@ -102,7 +109,7 @@ class TasksViewModel extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.detail;
-      notifyListeners();
+      _notify();
       return false;
     }
   }
@@ -110,19 +117,20 @@ class TasksViewModel extends ChangeNotifier {
   Future<bool> deleteTask(Task task) async {
     final previous = _tasks;
     _tasks = previous.where((t) => t.id != task.id).toList();
-    notifyListeners();
+    _notify();
     try {
       await _repository.deleteTask(task.id);
       return true;
     } on ApiException catch (e) {
       _tasks = previous;
       _errorMessage = e.detail;
-      notifyListeners();
+      _notify();
       return false;
     }
   }
 
   Future<void> _fetch({required bool reset}) async {
+    final requestId = ++_requestId;
     if (reset) {
       _page = 0;
       _hasMore = true;
@@ -131,7 +139,7 @@ class TasksViewModel extends ChangeNotifier {
       _isLoadingMore = true;
     }
     _errorMessage = null;
-    notifyListeners();
+    _notify();
 
     try {
       final result = await _repository.fetchTasks(
@@ -140,22 +148,39 @@ class TasksViewModel extends ChangeNotifier {
         page: _page,
         size: _pageSize,
       );
+      if (!_isCurrent(requestId)) return;
       _tasks = reset ? result.content : [..._tasks, ...result.content];
       _page += 1;
       _hasMore = _page < result.totalPages;
     } on ApiException catch (e) {
+      if (!_isCurrent(requestId)) return;
       _errorMessage = e.detail;
     } catch (_) {
+      if (!_isCurrent(requestId)) return;
       _errorMessage = Strings.somethingWentWrong;
     } finally {
-      _isLoading = false;
-      _isLoadingMore = false;
-      notifyListeners();
+      // A stale request must not clear the loading flags a newer,
+      // still-in-flight request set for itself.
+      if (_isCurrent(requestId)) {
+        _isLoading = false;
+        _isLoadingMore = false;
+        _notify();
+      }
     }
+  }
+
+  /// Whether [requestId] is still the most recent [_fetch] call, i.e. its
+  /// response should be applied rather than discarded as stale.
+  bool _isCurrent(int requestId) => requestId == _requestId;
+
+  void _notify() {
+    if (_disposed) return;
+    notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _debounceTimer?.cancel();
     super.dispose();
   }

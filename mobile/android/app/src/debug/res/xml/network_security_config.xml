@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Allows plain HTTP only to the addresses used to reach a local backend
-  during development (Android emulator host alias and localhost). All other
-  destinations still require HTTPS. Debug-only trade-off — see mobile/README.md.
+  Debug-build only (lives under src/debug, not src/main, so it is never
+  packaged into a release build). Allows plain HTTP only to the addresses
+  used to reach a local backend during development (Android emulator host
+  alias and localhost). All other destinations still require HTTPS.
+  See mobile/README.md.
 -->
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">

@@ -49,13 +49,46 @@ class _AuthGateState extends State<_AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    final status = context.watch<AuthViewModel>().status;
-    return switch (status) {
+    final viewModel = context.watch<AuthViewModel>();
+    return switch (viewModel.status) {
       AuthStatus.unknown => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
       AuthStatus.authenticated => const TasksScreen(),
       AuthStatus.unauthenticated => const LoginScreen(),
+      AuthStatus.error => _BootstrapErrorView(
+        message: viewModel.errorMessage ?? Strings.somethingWentWrong,
+        onRetry: viewModel.bootstrap,
+      ),
     };
+  }
+}
+
+/// Shown when restoring a previous session failed for a recoverable reason
+/// (no connectivity, a server error) — keeps the stored session and lets the
+/// user retry instead of dropping them onto the login screen.
+class _BootstrapErrorView extends StatelessWidget {
+  const _BootstrapErrorView({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(message, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              FilledButton(onPressed: onRetry, child: const Text(Strings.retry)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
