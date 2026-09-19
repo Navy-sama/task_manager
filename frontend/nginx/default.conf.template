@@ -12,15 +12,42 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    # HSTS: no-op over plain HTTP (local compose on http://localhost ignores it), only takes
+    # effect once the origin is actually served over HTTPS (Cloud Run).
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    # style-src needs 'unsafe-inline': Radix UI / sonner inject <style> elements at runtime and
+    # there is no practical way to hash/nonce those. No inline <script> or style="" attributes are
+    # used anywhere in the app (Vite emits only external, self-hosted module scripts), so
+    # script-src stays locked to 'self'. fonts.googleapis.com/fonts.gstatic.com are the only
+    # third-party origins the app loads (Google Fonts, see index.html); everything else, including
+    # the API, is same-origin via /api/.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
 
     # Never cache the entry point so a new deploy is picked up immediately.
+    # `add_header` in a location block does NOT inherit server-level headers, so the security
+    # headers (including CSP/HSTS) are repeated here.
     location = /index.html {
         add_header Cache-Control "no-cache";
+
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
     }
 
     # Vite fingerprints asset filenames, so these can be cached forever.
     location /assets/ {
         add_header Cache-Control "public, max-age=31536000, immutable";
+
+        # See the note above /index.html: location-level add_header overrides server-level.
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
     }
 
     # Reverse-proxy the API to the backend Cloud Run service so the browser only ever talks to
@@ -35,6 +62,13 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header X-Forwarded-Host $host;
+
+        # See the note above /index.html: location-level add_header overrides server-level.
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     }
 
     location / {
