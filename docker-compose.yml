@@ -21,5 +21,39 @@ services:
       timeout: 5s
       retries: 20
 
+  # Full-stack services: `docker compose up -d` still starts only MySQL; use
+  # `docker compose --profile app up -d --build` to also build and run backend + frontend.
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # No SPRING_PROFILES_ACTIVE: the "dev" default profile already sets cookie-secure=false,
+      # which matches this plain-http local stack (prod profile is exercised on Cloud Run only).
+      DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-taskmanager}
+      DATABASE_USERNAME: ${MYSQL_USER:-taskmanager}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env (see .env.example)}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (see .env.example)}
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8081}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      - backend
+    environment:
+      BACKEND_URL: http://backend:8080
+      BACKEND_HOST: "backend:8080"
+      PORT: "8080"
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:8080"
+
 volumes:
   mysql_data:

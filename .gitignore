@@ -8,6 +8,7 @@
 
 # Build outputs and dependencies
 target/
+build/
 node_modules/
 dist/
 coverage/

@@ -1,0 +1,43 @@
+# Rendered by the nginx-unprivileged entrypoint (envsubst) into /etc/nginx/conf.d/default.conf.
+# Only variables that exist in the container's environment are substituted, so nginx's own
+# built-in $variables (e.g. $host, $scheme) are left untouched.
+server {
+    listen ${PORT};
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    # Never cache the entry point so a new deploy is picked up immediately.
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+
+    # Vite fingerprints asset filenames, so these can be cached forever.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # Reverse-proxy the API to the backend Cloud Run service so the browser only ever talks to
+    # this origin: HttpOnly cookies and the XSRF-TOKEN cookie stay first-party.
+    location /api/ {
+        proxy_pass ${BACKEND_URL};
+        proxy_ssl_server_name on;
+        proxy_set_header Host ${BACKEND_HOST};
+
+        # Forward the values the *browser* sent, not what this hop sees, so the backend
+        # (server.forward-headers-strategy=framework) reconstructs the original request.
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+        proxy_set_header X-Forwarded-Host $host;
+    }
+
+    location / {
+        try_files $uri /index.html;
+    }
+}
