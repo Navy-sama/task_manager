@@ -1,0 +1,24 @@
+# Environment files (only the examples are versioned)
+.env
+.env.*
+!.env.example
+
+# Local assistant memory
+.remember/
+
+# Build outputs and dependencies
+target/
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

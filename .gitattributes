@@ -1,0 +1,12 @@
+# Normalise line endings in the repository.
+* text=auto
+
+# Scripts executed on Linux (CI runners, Docker images) must keep LF,
+# otherwise the shebang breaks with "not found" errors.
+*.sh text eol=lf
+mvnw text eol=lf
+Dockerfile text eol=lf
+
+# Windows scripts keep CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
