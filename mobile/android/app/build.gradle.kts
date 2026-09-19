@@ -7,8 +7,9 @@ plugins {
 
 android {
     namespace = "io.github.navysama.mobile"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Pinned above the Flutter 3.29 defaults: flutter_secure_storage 10 compiles against SDK 36 and NDK 27.
+    compileSdk = 36
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -24,7 +25,8 @@ android {
         applicationId = "io.github.navysama.mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // flutter_secure_storage requires API 23+ (Android Keystore-backed encryption).
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
