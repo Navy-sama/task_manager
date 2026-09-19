@@ -23,6 +23,7 @@
         <jacoco.version>0.8.15</jacoco.version>
         <spotless.version>3.10.2</spotless.version>
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
+        <mysql-socket-factory.version>1.30.0</mysql-socket-factory.version>
     </properties>
 
     <dependencyManagement>
@@ -82,6 +83,13 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Lets the JDBC URL reach Cloud SQL through a secure local proxy socket, without a public IP. -->
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>mysql-socket-factory-connector-j-8</artifactId>
+            <version>${mysql-socket-factory.version}</version>
             <scope>runtime</scope>
         </dependency>
 

@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: taskmanager
+          MYSQL_USER: taskmanager
+          MYSQL_PASSWORD: taskmanager
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Spotless "apply" runs on process-sources by default; skipping it here means an
+      # unformatted commit fails `check` instead of being silently reformatted in CI.
+      - name: Build, test and verify (MySQL 8.4, Spotless check, JaCoCo gate)
+        working-directory: backend
+        run: ./mvnw -B verify -Dspotless.apply.skip=true
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/taskmanager
+          SPRING_DATASOURCE_USERNAME: taskmanager
+          SPRING_DATASOURCE_PASSWORD: taskmanager
+
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-jacoco-report
+          path: backend/target/site/jacoco/
+          retention-days: 14
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # pnpm-lock.yaml (lockfileVersion 9.0) is not tied to one pnpm major; package.json pins
+      # no "packageManager", so the version is fixed here instead.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "10"
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: frontend
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: frontend
+        run: pnpm typecheck
+
+      - name: Test
+        working-directory: frontend
+        run: pnpm test
+
+      - name: Build
+        working-directory: frontend
+        run: pnpm build
+
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # The Flutter app is built by another agent concurrently and may not exist yet.
+      # hashFiles() only sees the checked-out workspace, so job-level `if` (evaluated before any
+      # checkout) can't use it reliably — gate each step instead, after checkout.
+      - name: Check whether the mobile app exists yet
+        id: check
+        shell: bash
+        run: |
+          if [ -f mobile/pubspec.yaml ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Flutter
+        if: steps.check.outputs.exists == 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.29.3
+
+      - name: Install dependencies
+        if: steps.check.outputs.exists == 'true'
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Analyze
+        if: steps.check.outputs.exists == 'true'
+        working-directory: mobile
+        run: flutter analyze
+
+      - name: Test
+        if: steps.check.outputs.exists == 'true'
+        working-directory: mobile
+        run: flutter test
+
+  docker:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build backend image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: backend
+          push: false
+          tags: task-manager-backend:ci
+
+      - name: Build frontend image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: frontend
+          push: false
+          tags: task-manager-frontend:ci
