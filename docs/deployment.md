@@ -113,9 +113,14 @@ gcloud iam workload-identity-pools providers create-oidc "github-provider" \
   --location="global" \
   --workload-identity-pool="github-pool" \
   --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
-  --attribute-condition="assertion.repository=='${GH_REPO}'" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
+  --attribute-condition="assertion.repository=='${GH_REPO}' && assertion.ref=='refs/heads/main'" \
   --project="$PROJECT_ID"
+# Note: with this attribute-condition, only workflow runs triggered from refs/heads/main can mint
+# a token (pushes to main, and workflow_dispatch run against main). A workflow_dispatch run
+# against any other branch is refused by GCP at the token-exchange step — this is intended: it
+# keeps deploys restricted to main even though deploy.yml can, in principle, be dispatched
+# manually from another branch.
 
 gcloud iam service-accounts add-iam-policy-binding "$DEPLOYER_SA" \
   --role="roles/iam.workloadIdentityUser" \
@@ -201,3 +206,21 @@ gcloud run services update-traffic task-manager-frontend --region="$REGION" --to
   (`/actuator/health*`, already public in `SecurityConfig`) and the compose `depends_on:
   condition: service_healthy` on MySQL cover startup ordering; adding container-level healthchecks
   too was judged unnecessary for this scope.
+- The Cloud Run `--set-secrets` references point at the `:latest` alias of each Secret Manager
+  secret, not a pinned numeric version. Cloud Run resolves `:latest` to a concrete version number
+  at deploy time and bakes that into the revision, so rolling back to a previous revision still
+  serves the secret version it was originally deployed with — rollback is safe. The trade-off is
+  that a secret rotation (adding a new version and disabling the old one) only takes effect on the
+  *next* deploy, not immediately; pin explicit versions (e.g. `DATABASE_PASSWORD:3`) instead of
+  `:latest` if a stricter audit trail of "which secret version is live right now" is required.
+- The backend Cloud Run service is deployed with `--allow-unauthenticated`, so it is reachable
+  directly (bypassing the frontend's `/api/` proxy) by anyone who has its URL. This is considered
+  acceptable because the API is already protected by its own JWT + CSRF checks regardless of the
+  caller's path. Making it private (`--no-allow-unauthenticated`) would require nginx to mint and
+  attach a Cloud Run identity token on every proxied request (service-to-service auth), which is
+  out of scope for this project.
+- GitHub Actions in the CI/CD workflows are pinned by major version tag (e.g. `actions/checkout@v4`),
+  not by commit SHA. A tag can be moved by the action's maintainer (or, if their account is
+  compromised, by an attacker) to point at different code without changing the version number seen
+  in the workflow file. This is judged acceptable for this scope; for a production setup, pin
+  actions by full commit SHA and use Dependabot (or Renovate) to keep those SHAs up to date.
