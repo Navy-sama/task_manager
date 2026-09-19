@@ -16,6 +16,8 @@
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "emailPlaceholder": "you@example.com",
     "login": {
       "title": "Welcome back",

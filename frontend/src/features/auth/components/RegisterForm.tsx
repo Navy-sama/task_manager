@@ -8,6 +8,7 @@ import { FieldError } from "@/components/FieldError";
 import { FormAlert } from "@/components/FormAlert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { getErrorMessage } from "@/i18n/error-message";
 import { toApiError } from "@/lib/api-error";
@@ -79,9 +80,8 @@ export function RegisterForm() {
 
       <div className="grid gap-1.5">
         <Label htmlFor={`${id}-password`}>{t("auth.password")}</Label>
-        <Input
+        <PasswordInput
           id={`${id}-password`}
-          type="password"
           autoComplete="new-password"
           aria-invalid={errors.password ? true : undefined}
           aria-describedby={`${passwordHintId} ${passwordErrorId}`}
@@ -95,9 +95,8 @@ export function RegisterForm() {
 
       <div className="grid gap-1.5">
         <Label htmlFor={`${id}-confirm`}>{t("auth.confirmPassword")}</Label>
-        <Input
+        <PasswordInput
           id={`${id}-confirm`}
-          type="password"
           autoComplete="new-password"
           aria-invalid={errors.confirmPassword ? true : undefined}
           aria-describedby={confirmErrorId}
